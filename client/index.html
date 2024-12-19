@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Book API Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .book-list {
+            margin-top: 20px;
+        }
+        .book-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .book-item h4 {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Grade Book API Tester</h1>
+
+    <h3>Search Books</h3>
+    <label for="search">Enter Book Name:</label>
+    <input type="text" id="search" placeholder="e.g., math">
+    <label for="sort">Sort By:</label>
+    <select id="sort">
+        <option value="name">Name</option>
+        <option value="publisher">Publisher</option>
+        <option value="cost">Cost</option>
+    </select>
+    <label for="order">Order:</label>
+    <select id="order">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+    </select>
+    <button id="btn-search">Search</button>
+
+    <div id="results" class="book-list"></div>
+
+    <script>
+        const apiBaseUrl = "http://127.0.0.1:5000/api";
+
+        document.getElementById("btn-search").addEventListener("click", async () => {
+            const name = document.getElementById("search").value;
+            const sortBy = document.getElementById("sort").value;
+            const order = document.getElementById("order").value;
+            const resultsContainer = document.getElementById("results");
+            resultsContainer.innerHTML = ""; // Clear previous results
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/search?name=${name}&sort_by=${sortBy}&order=${order}`);
+                const data = await response.json();
+
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(result => {
+                        const book = result.book;
+                        const bookItem = document.createElement("div");
+                        bookItem.className = "book-item";
+                        bookItem.innerHTML = `
+                            <h4>${book.name}</h4>
+                            <p><strong>Publisher:</strong> ${book.publisher}</p>
+                            <p><strong>Cost:</strong> $${book.cost.toFixed(2)}</p>
+                            <p><strong>Grade:</strong> ${result.grade}</p>
+                            <p><strong>Subject:</strong> ${result.subject}</p>
+                        `;
+                        resultsContainer.appendChild(bookItem);
+                    });
+                } else {
+                    resultsContainer.innerHTML = `<p class="error">No books found with the given name.</p>`;
+                }
+            } catch (err) {
+                resultsContainer.innerHTML = `<p class="error">Error searching for books.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
