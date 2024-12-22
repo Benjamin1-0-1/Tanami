@@ -1,0 +1,15 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f9f9f9;
+  }
+
+  nav {
+    background: #eee;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }

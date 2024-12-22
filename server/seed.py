@@ -1,77 +1,35 @@
 # seed.py
-from app import db, app
-from models import Book
 
-# --------------------------------------------------------------
-# 1) DEFINE / LOAD YOUR MASSIVE BOOK DATA
-#    For clarity, here’s a highly abbreviated snippet of your data.
-#    You can store the entire dataset in a JSON file and read it in,
-#    or just define it as a Python variable.
-# --------------------------------------------------------------
-seed_data = [
-    {
-        "publisher": "KENYA LITERATURE BUREAU",
-        "level": "pp1",
-        "items": [
-            {
-                "isbn": None,
-                "title": "KLB skillgrow language activities",
-                "price": 447.00,
-                "status": "APPROVED"
-            },
-            {
-                "isbn": None,
-                "title": "KLB skillgrow mazoezi ya lugha",
-                "price": 401.00,
-                "status": "APPROVED"
-            },
-            # ... more items ...
-        ]
-    },
-    {
-        "publisher": "LONGHORN",
-        "level": "pp1",
-        "items": [
-            {
-                "isbn": None,
-                "title": "longhorn language activities",
-                "price": 650,
-                "status": "APPROVED"
-            },
-            {
-                "isbn": None,
-                "title": "longhornmathematics activities",
-                "price": 620,
-                "status": "APPROVED"
-            }
-        ]
-    },
-    # ADD THE REST OF YOUR BIG LIST HERE ...
-]
+import json
+from app import create_app  # Import your factory
+from models import db, Book
 
-
-# --------------------------------------------------------------
-# 2) CREATE ALL TABLES (if not exist) AND INSERT (SEED) THE DATA
-# --------------------------------------------------------------
 def seed_database():
+    """
+    Loads data from books_data.json & inserts into DB.
+    """
+    app = create_app()
     with app.app_context():
-        # Create the tables if they don’t already exist
-        print("Creating tables...")
+        # 1) Create tables if not exist
         db.create_all()
 
-        # Clear existing data (optional; be careful in production!)
-        print("Clearing old data...")
+        # 2) Clear old data (optional in production!)
         Book.query.delete()
 
-        # Insert new records
-        print("Seeding new data...")
+        # 3) Load from JSON
+        print("Loading data from books_data.json...")
+        with open("books.json", "r", encoding="utf-8") as f:
+            seed_data = json.load(f)
+
+        # 4) Insert records
+        print("Inserting records...")
         for block in seed_data:
             publisher_name = block["publisher"]
-            level = block["level"]
+            level_str = block["level"]
             for item in block["items"]:
                 new_book = Book(
                     publisher=publisher_name,
-                    level=level,
+                    level=level_str,
                     isbn=item.get("isbn"),
                     title=item["title"],
                     price=item.get("price"),
@@ -79,10 +37,9 @@ def seed_database():
                 )
                 db.session.add(new_book)
 
-        # Commit all changes
+        # 5) Commit
         db.session.commit()
         print("Seeding complete!")
-
 
 if __name__ == "__main__":
     seed_database()

@@ -13,6 +13,17 @@ book_schema = BookSchema()
 books_schema = BookSchema(many=True)
 audit_schema = BookAuditSchema()
 
+
+@books_bp.route("/books", methods=["GET"])
+def get_all_books():
+    """
+    Returns all books in the database (no filters).
+    Example usage: GET /api/books
+    """
+    books = Book.query.all()
+    return jsonify(books_schema.dump(books)), 200
+
+
 @books_bp.route("/filter", methods=["GET"])
 def filter_books():
     """
@@ -38,6 +49,7 @@ def filter_books():
     if level_query:
         q = q.filter(Book.level.ilike(f"%{level_query}%"))
     if subject_query:
+        # Using 'title' for "subject" filter
         q = q.filter(Book.title.ilike(f"%{subject_query}%"))
 
     # Sort
@@ -52,7 +64,10 @@ def filter_books():
         q = q.order_by(asc(col))
 
     total_count = q.count()
-    pages = ceil(total_count / limit)
+
+    # Simple pagination
+    from math import ceil
+    total_pages = ceil(total_count / limit)
     offset_val = (page - 1) * limit
 
     books_list = q.offset(offset_val).limit(limit).all()
@@ -62,7 +77,7 @@ def filter_books():
         "page": page,
         "limit": limit,
         "total_count": total_count,
-        "total_pages": pages,
+        "total_pages": total_pages,
         "data": data
     }), 200
 
@@ -184,3 +199,5 @@ def delete_book(book_id):
     db.session.commit()
 
     return jsonify({"message": f"Book {book_id} deleted"}), 200
+
+
