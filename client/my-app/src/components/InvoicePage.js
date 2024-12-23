@@ -36,6 +36,9 @@ function InvoicePage() {
       const res = await axios.get("http://127.0.0.1:5000/api/filter", {
         params: {
           subject: searchQuery,   // or 'publisher', or combine them
+          // publisher: publisherQuery,
+          // level: levelQuery,
+          // subject: subjectQuery,
           limit: 50,
         },
       });

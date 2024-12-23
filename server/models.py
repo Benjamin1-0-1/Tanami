@@ -65,8 +65,7 @@ class InvoiceItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     invoice_id = db.Column(db.Integer, db.ForeignKey("invoices.id"), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
-    book_price = db.Column(db.Float, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
+    book_price = db.Column(db.Float, nullable=False)  # Price at the time
+    quantity = db.Column(db.Integer, nullable=False, default=1)  # <--- for multiple copies
 
-    # optional relationship to Book if you want easy access
     book = db.relationship("Book", backref="invoice_items")

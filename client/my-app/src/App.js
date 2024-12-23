@@ -27,8 +27,8 @@ function App() {
             <Route path="/books/edit/:id" element={<BookForm />} />
 
             {/* Invoice pages */}
-            {/* <Route path="/invoices" element={<InvoicePage />} />
-            <Route path="/invoices/past" element={<InvoicesList />} /> */}
+            <Route path="/invoices" element={<InvoicePage />} />
+            <Route path="/invoices/past" element={<InvoicesList />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -53,6 +53,9 @@ function Navbar() {
       {token ? (
         <>
           <Link to="/books/create">Add Book</Link>
+          <Link to="/invoices">Create/View Invoice</Link>
+          <Link to="/invoices/past">Past Invoices</Link>
+
           <button onClick={handleLogout}>Logout</button>
         </>
       ) : (

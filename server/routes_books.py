@@ -2,6 +2,7 @@
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
+from sqlalchemy import or_, asc, desc
 from sqlalchemy import asc, desc
 from models import db, Book, BookAudit
 from schemas import BookSchema, BookAuditSchema
@@ -48,9 +49,15 @@ def filter_books():
         q = q.filter(Book.publisher.ilike(f"%{publisher_query}%"))
     if level_query:
         q = q.filter(Book.level.ilike(f"%{level_query}%"))
+    # If your user is passing 'subject=kenya',
+    # match any columns that might contain 'kenya':
     if subject_query:
-        # Using 'title' for "subject" filter
-        q = q.filter(Book.title.ilike(f"%{subject_query}%"))
+        q = q.filter(or_(
+            Book.title.ilike(f"%{subject_query}%"),
+            Book.publisher.ilike(f"%{subject_query}%"),
+            # check above and make it f"%{publisher_query}%"
+            Book.level.ilike(f"%{subject_query}%"),
+        ))
 
     # Sort
     if sort_by == "price":
@@ -67,19 +74,39 @@ def filter_books():
 
     # Simple pagination
     from math import ceil
+    total_count = q.count()
     total_pages = ceil(total_count / limit)
     offset_val = (page - 1) * limit
+    # total_pages = ceil(total_count / limit)
+    # offset_val = (page - 1) * limit
 
     books_list = q.offset(offset_val).limit(limit).all()
-    data = books_schema.dump(books_list)
+    # data = books_schema.dump(books_list)
+    data = []
+    for b in books_list:
+        data.append({
+            "id": b.id,
+            "title": b.title,
+            "publisher": b.publisher,
+            "price": b.price,
+            "level": b.level,
+            "status": b.status
+        })
 
-    return jsonify({
+    # return jsonify({
+    #     "page": page,
+    #     "limit": limit,
+    #     "total_count": total_count,
+    #     "total_pages": total_pages,
+    #     "data": data
+    # }), 200
+    return {
         "page": page,
         "limit": limit,
         "total_count": total_count,
         "total_pages": total_pages,
         "data": data
-    }), 200
+    }, 200
 
 
 @books_bp.route("/books/<int:book_id>", methods=["GET"])
